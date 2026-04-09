@@ -1,0 +1,19 @@
+# Ignore Model files
+*.gguf
+qwen3_haui_lora/
+
+# Ignore Database
+chroma_db/
+
+# Ignore Python caches
+__pycache__/
+*.pyc
+
+# Ignore environment
+venv/
+env/
+.env
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+*.checkpoint
