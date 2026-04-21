@@ -1,6 +1,8 @@
 # HAUI Admission AI Chatbot
 (Trợ lý AI Tư vấn Tuyển sinh Đại học Công nghiệp Hà Nội - HAUI)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Thangdeo2112/RAG_Chatbot_HAUI)
+
 ## 📌 Giới thiệu chung
 Đây là dự án Đồ án tốt nghiệp nhằm xây dựng một hệ thống RAG (Retrieval-Augmented Generation) Chatbot hỗ trợ tư vấn thông tin tuyển sinh cho trường Đại học Công nghiệp Hà Nội. Hệ thống được tinh chỉnh (fine-tune) và tối ưu hóa để có thể chạy **hoàn toàn local (offline) trên CPU** của laptop cá nhân mà không cần đến GPU mạnh hay kết nối Internet.
 
