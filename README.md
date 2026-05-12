@@ -13,7 +13,7 @@
     *   **Database**: Sử dụng Vector Database **ChromaDB** giúp lưu trữ và truy xuất ngữ cảnh chính xác, tốc độ cao.
 *   **Xử lý và Suy luận (Inference)**: Tích hợp **Ollama** ở môi trường local, có tính năng phản hồi luồng (Async Streaming) tạo cảm giác mượt mà, phản hồi ngay lập tức như ChatGPT. 
 *   **Giao diện người dùng (Gradio Custom UI)**: Được xây dựng bằng **Gradio 6.0** với thiết kế bố cục 3 cột chuyên nghiệp. Hỗ trợ giao diện bóng bẩy, responsive, ẩn avatar thừa và bong bóng chat được tối ưu CSS theo phong cách tối giản.
-*   **Đánh giá chất lượng tự động (LLM-as-a-Judge)**: Tích hợp framework đánh giá khách quan sử dụng API từ **Google Gemini** và **Groq Llama-3**. Chấm điểm trên 3 tiêu chí: Độ chính xác (Accuracy), Độ liên quan (Relevance), và Chất lượng ngôn ngữ (Fluency) để so sánh khách quan phiên bản gốc (Baseline) và bản tinh chỉnh (Fine-tuned).
+
 
 ## ⚙️ Hướng dẫn cài đặt và sử dụng
 
@@ -40,32 +40,24 @@ ollama create haui_bot -f Modelfile
 **Bước 1: Làm sạch dữ liệu và tách đoạn (Chunks)**
 Trích xuất dữ liệu thô (từ các nguồn file pdf, docx qua `read_pdf.py` / `read_docx.py` hoặc crawl web) và xử lý lại thành các tập tin JSONL chuẩn mực.
 ```bash
-python step1_prepare_chunks.py
+python 03_chunk_processor.py
 ```
 
 **Bước 2: Vector hóa & Lưu trữ thông tin (Embedding)**
 Tạo index vào vector database ChromaDB. Quá trình này sẽ mất một chút thời gian cho lần chạy đầu tiên.
 ```bash
-python step2_embed_index.py
+python 04_vector_indexer.py
 ```
 *Sau bước này, một thư mục `chroma_db/` sẽ được sinh ra ở máy của bạn.*
 
 **Bước 3: Khởi chạy Trợ lý AI (Gradio Web UI)**
 Chạy câu lệnh dưới và tận dụng thành quả của bạn ở trình duyệt:
 ```bash
-python step3_rag_chatbot.py
+python 05_rag_chatbot.py
 ```
 👉 Truy cập giao diện tại: **http://localhost:7860**
 
-**Bước 4: Đánh giá mô hình bằng LLM-as-a-Judge (Tùy chọn)**
-Nếu bạn muốn kiểm tra, chạy thử nghiệm hiệu năng thực tế của model sau khi fine-tune so với bản gốc:
-```bash
-python evaluate_llm_judge.py
-```
-Sau quá trình tự động đánh giá, hệ thống xuất ra các file Excel và CSV chi tiết điểm số. Để xem tóm tắt kết quả hiệu suất một cách nhanh chóng, hãy chạy:
-```bash
-python check_result.py
-```
+
 
 ---
 
@@ -78,17 +70,15 @@ RAG/
 ├── .gitignore                  ← Tệp cấu hình, sẽ bỏ qua các models có dung lượng lớn
 ├── Modelfile                   ← Tệp lệnh thao tác của Ollama để tạo custom chatbot
 ├── fine-tune-haui-1.ipynb      ← Noteook minh hoạ quá trình Fine-tune tham số
-├── evaluate_llm_judge.py       ← Chạy đánh giá độ chính xác sử dụng LLM-as-a-Judge (Gemini/Groq)
-├── check_result.py             ← Script đọc và tóm tắt kết quả file Evaluate ra màn hình
 ├── read_docx.py / read_pdf.py  ← Code hỗ trợ đọc khối nội dung từ các file quy chế (.doc, .pdf)
 ├── qwen3-8b.Q4_K_M.gguf        ← File weights (quantize) của model LLM 
-├── step1_prepare_chunks.py     ← Mã nguồn tiền xử lý và cắt đoạn văn bản dữ liệu
-├── step2_embed_index.py        ← Mã nguồn embedding tài liệu vào ChromaDB
-├── step3_rag_chatbot.py        ← Khởi chạy server giao diện Web & kết nối inference model
-├── haui_qa_val.jsonl           ← Tập dữ liệu kiểm thử validation để đánh giá
+├── 03_chunk_processor.py     ← Mã nguồn tiền xử lý và cắt đoạn văn bản dữ liệu
+├── 04_vector_indexer.py        ← Mã nguồn embedding tài liệu vào ChromaDB
+├── 05_rag_chatbot.py        ← Khởi chạy server giao diện Web & kết nối inference model
+
 ...
 ```
 
 ## 📝 Chỉnh sửa & Cập nhật dữ liệu
-*   Để **cập nhật thêm kiến thức mới**, bạn chỉ cần tạo dữ liệu bằng các reader (eg. `read_docx.py`) và thêm file JSONL / Raw text vào hệ thống, sau đó quy định lại đường dẫn ở mảng đọc data của mã nguồn `step1_prepare_chunks.py` và chạy lại các luồng xử lý từ **Bước 1**. 
-*   Nếu muốn thay đổi Backend LLM sang OpenAI GPT hoặc Gemini thay vì Ollama, hãy chỉnh sửa logic của hàm request `LLM_CALL` ở file `step3_rag_chatbot.py`.
+*   Để **cập nhật thêm kiến thức mới**, bạn chỉ cần tạo dữ liệu bằng các reader (eg. `read_docx.py`) và thêm file JSONL / Raw text vào hệ thống, sau đó quy định lại đường dẫn ở mảng đọc data của mã nguồn `03_chunk_processor.py` và chạy lại các luồng xử lý từ **Bước 1**. 
+*   Nếu muốn thay đổi Backend LLM sang OpenAI GPT hoặc Gemini thay vì Ollama, hãy chỉnh sửa logic của hàm request `LLM_CALL` ở file `05_rag_chatbot.py`.

@@ -16,6 +16,12 @@ from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 
 # ── Cấu hình ──────────────────────────────────────────────────────────────────
+# === CHỌN BACKEND OLLAMA ===
+# Local CPU:  OLLAMA_URL = "http://localhost:11434"
+# GPU Cloud:  OLLAMA_URL = "https://xxxx.ngrok-free.app"   (Google Colab + ngrok)
+#             OLLAMA_URL = "https://<POD_ID>-11434.proxy.runpod.net"  (RunPod)
+OLLAMA_URL    = "https://autopilot-gigabyte-backache.ngrok-free.dev"
+
 CURRENT_DIR   = os.path.dirname(os.path.abspath(__file__))
 CHROMA_DIR    = os.path.join(CURRENT_DIR, "chroma_db")
 COLLECTION    = "haui_admission"
@@ -47,7 +53,7 @@ RAG_PROMPT_TEMPLATE = """{system}
 def call_ollama(prompt: str) -> str:
     """Gọi Ollama, không stream. Dùng cho testing."""
     import requests
-    resp = requests.post("http://localhost:11434/api/chat", json={
+    resp = requests.post(f"{OLLAMA_URL}/api/chat", headers={"ngrok-skip-browser-warning": "1"}, json={
         "model"   : "haui_bot",
         "messages": [{"role": "user", "content": prompt}],
         "stream"  : False,
@@ -150,7 +156,7 @@ def launch_ui(rag: HauiRAG):
         full_text = ""
         in_think  = False
         try:
-            resp = requests.post("http://localhost:11434/api/chat", json={
+            resp = requests.post(f"{OLLAMA_URL}/api/chat", headers={"ngrok-skip-browser-warning": "1"}, json={
                 "model"   : "haui_bot",
                 "messages": [{"role": "user", "content": prompt}],
                 "stream"  : True,
@@ -163,6 +169,12 @@ def launch_ui(rag: HauiRAG):
                     continue
                 try:
                     data = json.loads(line)
+                    if "error" in data:
+                        full_text += f"⚠️ Lỗi từ Ollama: {data['error']}"
+                        history[-1]["content"] = full_text
+                        yield "", history
+                        break
+                        
                     word = data.get("message", {}).get("content", "")
                     if not word:
                         continue
@@ -372,7 +384,6 @@ def launch_ui(rag: HauiRAG):
 
         with gr.Row(elem_id="main-row"):
 
-            # ─ CỘT TRÁI (scale=2)
             with gr.Column(scale=2, elem_id="sidebar"):
                 gr.Markdown("""
 ### Đề tài: HAUI Tuyển Sinh
@@ -385,7 +396,7 @@ Base: Qwen-3 8B
 Tích hợp: LoRA Adaptor
 
 **Cấu trúc**
-Kiến trúc RAG + Suy luận chuỗi, chạy Local không cần Internet.
+Kiến trúc RAG + Suy luận chuỗi.
                 """)
 
             # ─ CỘT GIỮA (scale=8, chiếm phần lớn)
